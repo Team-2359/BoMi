@@ -1,0 +1,45 @@
+@startwbs
+style
+wbsDiagram {
+  node {
+    BackgroundColor #E1D5E7
+    LineColor #9673A6
+  }
+  depth(0) {
+    BackgroundColor #F8CECC
+    LineColor #B85450
+  }
+  depth(1) {
+    BackgroundColor #D80073
+    LineColor #A50040
+    FontColor white
+  }
+}
+style
+
+ BoMI Borneo Medispa Intelligence App
+ 1. User Access Module
+ User Sign-In and AuthenticationnFR-01
+
+ 2. Inventory Management Module
+ Record Stock-In TransactionsnFR-02
+ Record Stock-Out TransactionsnFR-03
+
+ 3. Stock Monitoring Module
+ View Current Stock QuantitiesnFR-04
+ Receive Low-Stock AlertsnFR-05
+ Search Inventory by Product Name or CodenFR-06
+
+ 4. Inventory History & Reporting Modulen(Manager only)
+[#FFE6CC] View Stock Movement HistorynFR-07
+[#FFE6CC] Generate Inventory ReportsnFR-08
+
+ 5. AI Assistance Module
+ BoMI Scan Invoice Recognition and Draft Stock-In EntrynFR-AI-01
+[#FFE6CC] BoMI Insight Usage Trend Analysis and Restock RecommendationsnFR-AI-02 (Manager only)
+
+legend right
+  Orange = Branch Manager only
+  All other features Spa Staff and Branch Manager
+endlegend
+@endwbs
