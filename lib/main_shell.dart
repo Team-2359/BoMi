@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
-import 'pages/alerts_center_page.dart';
+import '/pages/alerts_centre_page.dart';
 import '/pages/bomi_insight_page.dart';
 import '/pages/bomi_scan_page.dart';
 import '/pages/home_page.dart';
@@ -86,11 +86,11 @@ class _MainShellState extends State<MainShell> {
               child: Center(
                 child: _QuickActionsWheel(
                   onStockIn: () => _openQuickRoute(
-                    const StockMovementPage(initialIsStockIn: true),
+                    const StockMovementPage(initialIsStockOut: true),
                   ),
                   onBomiScan: () => _openQuickRoute(const BoMIScanPage()),
                   onStockOut: () => _openQuickRoute(
-                    const StockMovementPage(initialIsStockIn: false),
+                    const StockMovementPage(initialIsStockOut: false),
                   ),
                 ),
               ),
