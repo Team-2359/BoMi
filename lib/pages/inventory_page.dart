@@ -1,30 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
-
-enum _StockStatus { low, inStock, expiring }
-
-class _InventoryItem {
-  final String initials;
-  final String name;
-  final String category;
-  final String unitSummary;
-  final String? minLabel;
-  final int currentStock;
-  final double progress;
-  final _StockStatus status;
-
-  const _InventoryItem({
-    required this.initials,
-    required this.name,
-    required this.category,
-    required this.unitSummary,
-    this.minLabel,
-    required this.currentStock,
-    required this.progress,
-    required this.status,
-  });
-}
+import 'item_details_page.dart';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -35,72 +12,51 @@ class InventoryPage extends StatefulWidget {
 
 class _InventoryPageState extends State<InventoryPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
   String _selectedCategory = 'All';
+  String _searchQuery = '';
 
-  static const List<String> _categories = ['All', 'Skincare', 'Treatment'];
-
-  static const List<_InventoryItem> _allItems = [
+  static const List<_InventoryItem> _items = [
     _InventoryItem(
       initials: 'Hf',
       name: 'Hyaluronic filler',
       category: 'Treatment',
-      unitSummary: '12 Units',
-      currentStock: 4,
-      progress: 0.28,
-      status: _StockStatus.low,
+      unitText: '12 Units',
+      minText: null,
+      stockLabel: 'Stock : 4',
+      progress: 0.24,
+      status: 'Low',
     ),
     _InventoryItem(
       initials: 'VC',
       name: 'Vitamin C serum',
       category: 'Skincare',
-      unitSummary: '4 boxes',
-      minLabel: 'Min 10',
-      currentStock: 40,
+      unitText: '4 boxes',
+      minText: '• Min 10',
+      stockLabel: 'Stock : 40',
       progress: 0.62,
-      status: _StockStatus.inStock,
+      status: 'In stock',
     ),
     _InventoryItem(
       initials: 'Ng',
       name: 'Nitrile gloves (M)',
       category: 'Treatment',
-      unitSummary: '6 packs',
-      minLabel: 'Min 12',
-      currentStock: 21,
-      progress: 0.44,
-      status: _StockStatus.expiring,
-    ),
-    _InventoryItem(
-      initials: 'Ps',
-      name: 'Peptide serum',
-      category: 'Skincare',
-      unitSummary: '8 bottles',
-      minLabel: 'Min 10',
-      currentStock: 18,
-      progress: 0.55,
-      status: _StockStatus.inStock,
-    ),
-    _InventoryItem(
-      initials: 'Ss',
-      name: 'Sunscreen SPF 30',
-      category: 'Skincare',
-      unitSummary: '5 tubes',
-      minLabel: 'Min 8',
-      currentStock: 5,
-      progress: 0.30,
-      status: _StockStatus.low,
+      unitText: '6 packs',
+      minText: '• Min 12',
+      stockLabel: 'Stock : 21',
+      progress: 0.45,
+      status: 'Expiring',
     ),
   ];
 
   List<_InventoryItem> get _filteredItems {
-    return _allItems.where((item) {
+    return _items.where((item) {
       final matchesCategory =
           _selectedCategory == 'All' || item.category == _selectedCategory;
-      final query = _searchQuery.trim().toLowerCase();
+      final q = _searchQuery.trim().toLowerCase();
       final matchesQuery =
-          query.isEmpty ||
-          item.name.toLowerCase().contains(query) ||
-          item.category.toLowerCase().contains(query);
+          q.isEmpty ||
+          item.name.toLowerCase().contains(q) ||
+          item.initials.toLowerCase().contains(q);
       return matchesCategory && matchesQuery;
     }).toList();
   }
@@ -111,246 +67,281 @@ class _InventoryPageState extends State<InventoryPage> {
     super.dispose();
   }
 
+  void _openItemDetails() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const ItemDetailsPage()),
+    );
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: kWhite,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Filter by Category',
+                  style: playfair(18, w: FontWeight.w700, c: kDark),
+                ),
+                const SizedBox(height: 12),
+                ...['All', 'Skincare', 'Treatment'].map((cat) {
+                  final selected = _selectedCategory == cat;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      cat,
+                      style: inter(
+                        14,
+                        w: selected ? FontWeight.w600 : FontWeight.w400,
+                        c: kDark,
+                      ),
+                    ),
+                    trailing: selected
+                        ? const Icon(Icons.check_circle, color: kDark)
+                        : null,
+                    onTap: () {
+                      setState(() => _selectedCategory = cat);
+                      Navigator.pop(sheetContext);
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final items = _filteredItems;
+    final visibleItems = _filteredItems;
 
     return Scaffold(
       backgroundColor: kBg,
       body: SafeArea(
         bottom: false,
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top Header Bar
-                Container(
-                  width: double.infinity,
-                  color: kWhite,
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                  child: SizedBox(
-                    height: 36,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Inventory',
-                        style: playfair(26, w: FontWeight.w700),
-                      ),
+            // Top Header Bar (matches BoMI Insight, BoMI Scan & Alerts height)
+            Container(
+              width: double.infinity,
+              color: kWhite,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+              child: SizedBox(
+                height: 34,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Inventory',
+                      style: playfair(24, w: FontWeight.w700, c: kDark),
                     ),
-                  ),
+                  ],
                 ),
+              ),
+            ),
 
-                // Subtitle, Search Bar & Category Filter Pills
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Find stock and keep up to dates',
-                            style: inter(12, c: Colors.black54),
-                          ),
-                          Text(
-                            '167 items',
-                            style: inter(11, c: Colors.black45),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Search Bar
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: kWhite,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
+            // Body Content
+            Expanded(
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Subtitle + total items count
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Icon(
-                              Icons.search_rounded,
-                              color: Colors.black45,
-                              size: 22,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                onChanged: (value) =>
-                                    setState(() => _searchQuery = value),
-                                style: inter(13, c: kDark),
-                                decoration: InputDecoration(
-                                  hintText: 'Search item...',
-                                  hintStyle: inter(13, c: Colors.black45),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 13,
-                                  ),
-                                ),
+                            Text(
+                              'Find stock and keep up to dates',
+                              style: inter(
+                                12,
+                                w: FontWeight.w400,
+                                c: const Color(0xFF8E8E93),
                               ),
                             ),
-                            if (_searchQuery.isNotEmpty)
-                              GestureDetector(
-                                onTap: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.only(right: 6),
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    size: 18,
-                                    color: Colors.black45,
-                                  ),
-                                ),
+                            Text(
+                              '167 items',
+                              style: inter(
+                                11,
+                                w: FontWeight.w400,
+                                c: const Color(0xFF8E8E93),
                               ),
-                            const Icon(
-                              Icons.tune_rounded,
-                              color: Colors.black38,
-                              size: 20,
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
-                      // Category Filter Pills
-                      Row(
-                        children: List.generate(_categories.length, (index) {
-                          final category = _categories[index];
-                          final isSelected = _selectedCategory == category;
-
-                          return Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                right: index < _categories.length - 1 ? 10 : 0,
+                        // Search bar with filter sliders icon
+                        Container(
+                          decoration: BoxDecoration(
+                            color: kWhite,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x05000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
                               ),
-                              child: GestureDetector(
-                                onTap: () => setState(
-                                  () => _selectedCategory = category,
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                setState(() => _searchQuery = value),
+                            style: inter(13, w: FontWeight.w400, c: kDark),
+                            decoration: InputDecoration(
+                              hintText: 'Search item...',
+                              hintStyle: inter(
+                                13,
+                                w: FontWeight.w400,
+                                c: const Color(0xFF8E8E93),
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Color(0xFF8E8E93),
+                                size: 22,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(
+                                  Icons.tune,
+                                  color: Color(0xFFD1D5DB),
+                                  size: 20,
                                 ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
+                                onPressed: _showFilterSheet,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // 3 Category tabs: All, Skincare, Treatment
+                        Row(
+                          children: ['All', 'Skincare', 'Treatment'].map((
+                            category,
+                          ) {
+                            final selected = _selectedCategory == category;
+                            final isLast = category == 'Treatment';
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  right: isLast ? 0 : 10,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () => setState(
+                                    () => _selectedCategory = category,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? kDark : kWhite,
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.03,
+                                  child: Container(
+                                    height: 40,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: selected ? kDark : kWhite,
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Color(0x05000000),
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
                                         ),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      category,
+                                      style: inter(
+                                        12,
+                                        w: selected
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
+                                        c: selected ? kWhite : kDark,
                                       ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    category,
-                                    textAlign: TextAlign.center,
-                                    style: inter(
-                                      13,
-                                      w: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
-                                      c: isSelected ? kWhite : kDark,
                                     ),
                                   ),
                                 ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Item cards list
+                        Expanded(
+                          child: ListView.separated(
+                            padding: const EdgeInsets.only(bottom: 140),
+                            itemCount: visibleItems.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              return _InventoryCard(
+                                item: visibleItems[index],
+                                onTap: _openItemDetails,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Teal circular + floating button above bottom nav bar
+                  Positioned(
+                    right: 22,
+                    bottom: 96,
+                    child: GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Add new inventory item',
+                                style: inter(13, w: FontWeight.w500, c: kWhite),
+                              ),
+                              backgroundColor: kDark,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
                           );
-                        }),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Scrollable Product Cards List
-                Expanded(
-                  child: items.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No items found',
-                            style: inter(13, c: Colors.black45),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
-                          itemCount: items.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            return _InventoryCard(
-                              item: items[index],
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Selected ${items[index].name}',
-                                      style: inter(
-                                        12,
-                                        w: FontWeight.w500,
-                                        c: kWhite,
-                                      ),
-                                    ),
-                                    backgroundColor: kDark,
-                                    duration: const Duration(seconds: 1),
-                                  ),
-                                );
-                              },
-                            );
-                          },
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF5D8A8C),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x22000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
                         ),
-                ),
-              ],
-            ),
-
-            // Floating Circular Plus Button
-            Positioned(
-              right: 20,
-              bottom: 102,
-              child: GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Add new inventory item',
-                        style: inter(12, w: FontWeight.w500, c: kWhite),
+                        child: const Icon(Icons.add, color: kWhite, size: 28),
                       ),
-                      backgroundColor: kDark,
-                      duration: const Duration(seconds: 1),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF618F94),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.16),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
-                  child: const Icon(Icons.add_rounded, color: kWhite, size: 28),
-                ),
+                ],
               ),
             ),
           ],
@@ -360,161 +351,183 @@ class _InventoryPageState extends State<InventoryPage> {
   }
 }
 
+class _InventoryItem {
+  final String initials;
+  final String name;
+  final String category;
+  final String unitText;
+  final String? minText;
+  final String stockLabel;
+  final double progress;
+  final String status;
+
+  const _InventoryItem({
+    required this.initials,
+    required this.name,
+    required this.category,
+    required this.unitText,
+    required this.minText,
+    required this.stockLabel,
+    required this.progress,
+    required this.status,
+  });
+}
+
 class _InventoryCard extends StatelessWidget {
   final _InventoryItem item;
   final VoidCallback onTap;
 
   const _InventoryCard({required this.item, required this.onTap});
 
-  Color get _accentColor {
-    switch (item.status) {
-      case _StockStatus.low:
-        return const Color(0xFFE53935);
-      case _StockStatus.inStock:
-        return const Color(0xFF16695C);
-      case _StockStatus.expiring:
-        return const Color(0xFFD99B26);
-    }
-  }
-
-  Color get _pillBgColor {
-    switch (item.status) {
-      case _StockStatus.low:
-        return const Color(0xFFFDECEA);
-      case _StockStatus.inStock:
-        return const Color(0xFFE3F1EC);
-      case _StockStatus.expiring:
-        return const Color(0xFFFEF5E0);
-    }
-  }
-
-  String get _statusLabel {
-    switch (item.status) {
-      case _StockStatus.low:
-        return 'Low';
-      case _StockStatus.inStock:
-        return 'In stock';
-      case _StockStatus.expiring:
-        return 'Expiring';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFFECECEC),
-                borderRadius: BorderRadius.circular(14),
+    Color badgeBg;
+    Color badgeBorder;
+    Color accentColor;
+
+    if (item.status == 'Low') {
+      badgeBg = const Color(0xFFFDECEC);
+      badgeBorder = const Color(0xFFEF5350);
+      accentColor = const Color(0xFFFF2D20);
+    } else if (item.status == 'Expiring') {
+      badgeBg = const Color(0xFFFEF6DC);
+      badgeBorder = const Color(0xFFE6A800);
+      accentColor = const Color(0xFFD99B00);
+    } else {
+      badgeBg = const Color(0xFFE6F7ED);
+      badgeBorder = const Color(0xFF4CAF50);
+      accentColor = const Color(0xFF28C76F);
+    }
+
+    return Material(
+      color: kWhite,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x05000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
-              child: Text(
-                item.initials,
-                style: inter(16, w: FontWeight.w700, c: kDark),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Left grey initials box
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDEDED),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  item.initials,
+                  style: inter(18, w: FontWeight.w700, c: kDark),
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          style: inter(14, w: FontWeight.w700, c: kDark),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _pillBgColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _accentColor.withValues(alpha: 0.7),
-                            width: 0.9,
+              const SizedBox(width: 14),
+
+              // Right details + progress bar
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: inter(14, w: FontWeight.w700, c: kDark),
                           ),
                         ),
-                        child: Text(
-                          _statusLabel,
-                          style: inter(10, w: FontWeight.w600, c: _accentColor),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(item.unitSummary, style: inter(11, c: Colors.black54)),
-                  if (item.minLabel != null) ...[
-                    const SizedBox(height: 1),
-                    Text(
-                      '• ${item.minLabel}',
-                      style: inter(10, c: Colors.black45),
-                    ),
-                  ],
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 7,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFBDBDBD),
-                            borderRadius: BorderRadius.circular(6),
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: badgeBorder, width: 1),
                           ),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: FractionallySizedBox(
-                              widthFactor: item.progress.clamp(0.0, 1.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: _accentColor,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
+                          child: Text(
+                            item.status,
+                            style: inter(
+                              10,
+                              w: FontWeight.w500,
+                              c: accentColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.unitText,
+                      style: inter(
+                        11,
+                        w: FontWeight.w400,
+                        c: const Color(0xFF6B7280),
+                      ),
+                    ),
+                    if (item.minText != null) ...[
+                      const SizedBox(height: 1),
+                      Text(
+                        item.minText!,
+                        style: inter(
+                          10,
+                          w: FontWeight.w400,
+                          c: const Color(0xFF8E8E93),
+                        ),
+                      ),
+                    ] else
+                      const SizedBox(height: 10),
+                    const SizedBox(height: 6),
+
+                    // Progress bar + Stock count + right chevron
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: item.progress,
+                              minHeight: 7,
+                              backgroundColor: const Color(0xFFEEEEEE),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                accentColor,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Stock : ${item.currentStock}',
-                        style: inter(10, w: FontWeight.w600, c: _accentColor),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 20,
-                        color: Colors.black38,
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 10),
+                        Text(
+                          item.stockLabel,
+                          style: inter(10, w: FontWeight.w600, c: accentColor),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 18,
+                          color: Color(0xFF8E8E93),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
