@@ -65,6 +65,45 @@ Provides separate access permissions for Spa Staff and Branch Managers according
 - **Google Gemini API** — AI-powered invoice extraction and inventory insights.
 - **Git & GitHub** — Version control and collaboration.
 
+## Git Branch Workflow
+
+We use Git branches to organise our work and avoid changing the main project directly.
+
+### Branches and Their Purposes
+
+| Branch | Purpose |
+|---|---|
+| `main` | Contains the stable and final version of our project. |
+| `develop` | Combines completed work from all team members. |
+| `feature/flutter-setup` | Used to set up the Flutter project and its basic structure. |
+| `feature/ci-workflow` | Used to set up GitHub Actions and automated testing. |
+| `feature/docs` | Used to create and update project documentation. |
+| `feature/<name>` | For future features, e.g. `feature/login`. Create a separate feature branch for each new feature. |
+| `release/<version>` | For preparing and checking a version before release. (Future use) |
+| `hotfix/<issue>` | For fixing urgent problems in the released version. (Future use) |
+
+*Note: Some branches are planned for future use and do not need to be created yet.*
+
+### Our Workflow
+
+1. Create your feature branch from `develop`.
+2. Work only on your assigned feature branch.
+3. Commit and push your changes to GitHub.
+4. Create a Pull Request (PR) from your feature branch into `develop`.
+5. Ask at least one teammate to review and approve your PR.
+6. Merge into `develop` after approval.
+7. When the project is ready and stable, create a PR from `develop` into `main`.
+8. Get at least one teammate's approval before merging into `main`.
+
+### Important Rules
+
+- Do not push directly to `main` or `develop`.
+- Always use a feature branch for your assigned work.
+- Always create a Pull Request before merging.
+- Review your teammates' changes when requested.
+- Keep your branch updated with the latest changes from `develop`.
+- Put project documents in the `docs/` folder.
+
 ## 👥 Development Team
 
 **Team 23:59**
