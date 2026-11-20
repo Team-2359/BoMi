@@ -89,9 +89,9 @@ We use Git branches to organise our work and avoid changing the main project dir
 ### Our Workflow
 
 1. Create your feature branch from `develop`.
-2. Work only on your assigned feature branch.
+2. Work only on your assigned `feature/` branch.
 3. Commit and push your changes to GitHub.
-4. Create a Pull Request (PR) from your feature branch into `develop`.
+4. Create a Pull Request (PR) from your `feature/` branch into `develop`.
 5. Ask at least one teammate to review and approve your PR.
 6. Merge into `develop` after approval.
 7. When the project is ready and stable, create a PR from `develop` into `main`.
@@ -99,19 +99,19 @@ We use Git branches to organise our work and avoid changing the main project dir
 
 ### Backup and Project Cleanup Workflow
 
-1. Ensure develop is stable.
-2. Update backup-all with the latest stable version from develop.
-3. Push backup-all to GitHub to preserve the version before major changes.
+1. Ensure `develop` is stable.
+2. Update `backup-all` with the latest stable version from `develop`.
+3. Push `backup-all` to GitHub to preserve the version before major changes.
 
 ### Project Cleanup and Maintenance Workflow
 
-1. Use fix/clean when develop has major integration issues or requires project restructuring.
+1. Use `fix/clean` when `develop` has major integration issues or requires project restructuring.
 2. Fix GitHub Actions failures, resolve integration errors, and organize project files.
 3. Move files into appropriate folders, rename files, remove duplicates, and update dependencies when needed.
 4. Fix errors, clean up files, and resolve GitHub Actions issues.
 5. Test the changes and ensure the project works correctly.
-6. Commit and push the changes to fix/clean.
-7. Create a PR from fix/clean into develop and obtain at least one teammate's approval before merging.
+6. Commit and push the changes to `fix/clean`.
+7. Create a PR from `fix/clean` into `develop` and obtain at least one teammate's approval before merging.
 
 ### Important Rules
 
