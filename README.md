@@ -79,6 +79,8 @@ We use Git branches to organise our work and avoid changing the main project dir
 | `feature/ci-workflow` | Used to set up GitHub Actions and automated testing. |
 | `feature/docs` | Used to create and update project documentation. |
 | `feature/<name>` | For future features, e.g. `feature/login`. Create a separate feature branch for each new feature. |
+| `fix/clean` | Used to fix project errors, clean up files, and resolve GitHub Actions workflow issues. |
+| `backup-all` | Used to preserve a backup of the original project before making major changes or fixes. |
 | `release/<version>` | For preparing and checking a version before release. (Future use) |
 | `hotfix/<issue>` | For fixing urgent problems in the released version. (Future use) |
 
@@ -94,6 +96,22 @@ We use Git branches to organise our work and avoid changing the main project dir
 6. Merge into `develop` after approval.
 7. When the project is ready and stable, create a PR from `develop` into `main`.
 8. Get at least one teammate's approval before merging into `main`.
+
+### Backup and Project Cleanup Workflow
+
+1. Ensure develop is stable.
+2. Update backup-all with the latest stable version from develop.
+3. Push backup-all to GitHub to preserve the version before major changes.
+
+### Project Cleanup and Maintenance Workflow
+
+1. Use fix/clean when develop has major integration issues or requires project restructuring.
+2. Fix GitHub Actions failures, resolve integration errors, and organize project files.
+3. Move files into appropriate folders, rename files, remove duplicates, and update dependencies when needed.
+4. Fix errors, clean up files, and resolve GitHub Actions issues.
+5. Test the changes and ensure the project works correctly.
+6. Commit and push the changes to fix/clean.
+7. Create a PR from fix/clean into develop and obtain at least one teammate's approval before merging.
 
 ### Important Rules
 
